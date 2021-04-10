@@ -3,6 +3,7 @@ use std::io::{BufRead, BufReader};
 use std::path::Path;
 
 mod problem_instance_error;
+mod solve_greedy;
 pub use problem_instance_error::ProblemInstanceError;
 
 const SEPARATOR: &'static str = "\t";
@@ -20,18 +21,28 @@ impl ProblemInstance {
         file_reader.read_line(&mut line)?;
         let number_of_tasks = ProblemInstance::parse_usize_with_prefix(&line, "n:")
             .ok_or_else(|| ProblemInstanceError::SyntaxError(1))?;
+        line.clear();
         file_reader.read_line(&mut line)?;
         let number_of_machines = ProblemInstance::parse_usize_with_prefix(&line, "m:")
             .ok_or_else(|| ProblemInstanceError::SyntaxError(2))?;
+        line.clear();
         file_reader.read_line(&mut line)?;
-        let task_times = ProblemInstance::parse_usize_list(&line, SEPARATOR)
-            .ok_or_else(|| ProblemInstanceError::SyntaxError(2))?;
+        let task_times = ProblemInstance::parse_usize_list(
+            &line[line
+                .find(SEPARATOR)
+                .ok_or_else(|| ProblemInstanceError::SyntaxError(3))?
+                + 1..],
+            SEPARATOR,
+        )
+        .ok_or_else(|| ProblemInstanceError::SyntaxError(3))?;
+        line.clear();
         file_reader.read_line(&mut line)?; // separator line
         let mut setup_times = Vec::new();
         for i in 0..=number_of_tasks {
+            line.clear();
             file_reader.read_line(&mut line)?;
             setup_times.push(match ProblemInstance::parse_usize_list(&line, SEPARATOR) {
-                Some(times) if times.len() == number_of_tasks => times,
+                Some(times) if times.len() == number_of_tasks + 1 => times,
                 _ => return Err(ProblemInstanceError::SyntaxError(i + 5)),
             });
         }
@@ -47,7 +58,10 @@ impl ProblemInstance {
     }
 
     fn parse_usize_list(str: &str, delimiter: &str) -> Option<Vec<usize>> {
-        str.split(delimiter).map(|str| str.parse().ok()).collect()
+        str.trim_end()
+            .split(delimiter)
+            .map(|str| str.trim().parse().ok())
+            .collect()
     }
 }
 
@@ -71,7 +85,7 @@ mod tests {
     #[test]
     fn parse_usize_list_pass() {
         assert_eq!(
-            ProblemInstance::parse_usize_list("45\t3\t23\t4", "\t"),
+            ProblemInstance::parse_usize_list("45\t3\t23\t4\t\r\n", "\t"),
             Some(vec![45, 3, 23, 4])
         );
     }

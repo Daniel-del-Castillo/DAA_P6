@@ -20,6 +20,18 @@ fn main() {
             return;
         }
     };
+    let solution = instance.solve_greedy();
+    for (i, task_list) in solution.iter().enumerate() {
+        println!(
+            "The machine {} executes the following tasks: {{ {} }}",
+            i,
+            task_list
+                .iter()
+                .map(|num| num.to_string())
+                .collect::<Vec<String>>()
+                .join(", ")
+        );
+    }
 }
 
 fn print_help() {
