@@ -2,6 +2,8 @@ use std::env;
 
 mod problem_instance;
 use problem_instance::ProblemInstance;
+mod problem_solution;
+use problem_solution::{GreedySolution, ProblemSolution};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -20,11 +22,11 @@ fn main() {
             return;
         }
     };
-    let solution = instance.solve_greedy();
-    for (i, task_list) in solution.iter().enumerate() {
+    let solution = GreedySolution::solve(&instance);
+    for (i, task_list) in solution.get_tasks_by_machine().iter().enumerate() {
         println!(
-            "The machine {} executes the following tasks: {{ {} }}",
-            i,
+            "The machine {} executes the following tasks and in the following order: {{ {} }}",
+            i + 1,
             task_list
                 .iter()
                 .map(|num| num.to_string())

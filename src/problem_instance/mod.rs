@@ -3,8 +3,10 @@ use std::io::{BufRead, BufReader};
 use std::path::Path;
 
 mod problem_instance_error;
-mod solve_greedy;
-pub use problem_instance_error::ProblemInstanceError;
+pub use problem_instance_error::{
+    ProblemInstanceError,
+    ProblemInstanceError::{IOError, SyntaxError},
+};
 
 const SEPARATOR: &'static str = "\t";
 
@@ -19,22 +21,19 @@ impl ProblemInstance {
         let mut file_reader = BufReader::new(File::open(path)?);
         let mut line = String::new();
         file_reader.read_line(&mut line)?;
-        let number_of_tasks = ProblemInstance::parse_usize_with_prefix(&line, "n:")
-            .ok_or_else(|| ProblemInstanceError::SyntaxError(1))?;
+        let number_of_tasks =
+            ProblemInstance::parse_usize_with_prefix(&line, "n:").ok_or_else(|| SyntaxError(1))?;
         line.clear();
         file_reader.read_line(&mut line)?;
-        let number_of_machines = ProblemInstance::parse_usize_with_prefix(&line, "m:")
-            .ok_or_else(|| ProblemInstanceError::SyntaxError(2))?;
+        let number_of_machines =
+            ProblemInstance::parse_usize_with_prefix(&line, "m:").ok_or_else(|| SyntaxError(2))?;
         line.clear();
         file_reader.read_line(&mut line)?;
         let task_times = ProblemInstance::parse_usize_list(
-            &line[line
-                .find(SEPARATOR)
-                .ok_or_else(|| ProblemInstanceError::SyntaxError(3))?
-                + 1..],
+            &line[line.find(SEPARATOR).ok_or_else(|| SyntaxError(3))? + 1..],
             SEPARATOR,
         )
-        .ok_or_else(|| ProblemInstanceError::SyntaxError(3))?;
+        .ok_or_else(|| SyntaxError(3))?;
         line.clear();
         file_reader.read_line(&mut line)?; // separator line
         let mut setup_times = Vec::new();
@@ -43,7 +42,7 @@ impl ProblemInstance {
             file_reader.read_line(&mut line)?;
             setup_times.push(match ProblemInstance::parse_usize_list(&line, SEPARATOR) {
                 Some(times) if times.len() == number_of_tasks + 1 => times,
-                _ => return Err(ProblemInstanceError::SyntaxError(i + 5)),
+                _ => return Err(SyntaxError(i + 5)),
             });
         }
         Ok(ProblemInstance {
@@ -62,6 +61,18 @@ impl ProblemInstance {
             .split(delimiter)
             .map(|str| str.trim().parse().ok())
             .collect()
+    }
+
+    pub fn number_of_machines(&self) -> usize {
+        self.number_of_machines
+    }
+
+    pub fn task_times(&self) -> &Vec<usize> {
+        &self.task_times
+    }
+
+    pub fn setup_times(&self) -> &Vec<Vec<usize>> {
+        &self.setup_times
     }
 }
 
