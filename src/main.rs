@@ -23,10 +23,19 @@ fn main() {
         }
     };
     let solution = GreedySolution::solve(&instance);
+    println!(
+        "The solution found has a total completion time of {}",
+        solution.get_total_completion_time()
+    );
+    let tcts_by_machine = solution.get_tcts_by_machine();
     for (i, task_list) in solution.get_tasks_by_machine().iter().enumerate() {
         println!(
-            "The machine {} executes the following tasks and in the following order: {{ {} }}",
+            "The machine {} spends {} units of time executing the following tasks and in the following order: ", 
             i + 1,
+            tcts_by_machine[i]
+        );
+        println!(
+            "{{ {} }}",
             task_list
                 .iter()
                 .map(|num| num.to_string())

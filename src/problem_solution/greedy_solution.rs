@@ -2,7 +2,7 @@ use super::{ProblemInstance, ProblemSolution};
 use std::collections::hash_set::HashSet;
 
 pub struct GreedySolution {
-    tct: usize,
+    tcts_by_machine: Vec<usize>,
     task_assignment_matrix: Vec<Vec<usize>>,
 }
 
@@ -10,20 +10,22 @@ impl ProblemSolution for GreedySolution {
     fn solve(instance: &ProblemInstance) -> Self {
         let mut asigned_tasks = HashSet::with_capacity(instance.task_times().len());
         let mut solution = GreedySolution {
-            tct: 0,
+            tcts_by_machine: Vec::with_capacity(instance.number_of_machines()),
             task_assignment_matrix: Vec::with_capacity(instance.number_of_machines()),
         };
         solution.choose_initial_tasks(instance, &mut asigned_tasks);
         while asigned_tasks.len() < instance.task_times().len() {
-            let (machine, task) =
-                solution.get_best_next_machine_and_task(instance, &mut asigned_tasks);
-            solution.task_assignment_matrix[machine].push(task);
-            asigned_tasks.insert(task);
+            solution.add_task(instance, &mut asigned_tasks);
         }
         solution
     }
+
     fn get_total_completion_time(&self) -> usize {
-        self.tct
+        self.tcts_by_machine.iter().sum()
+    }
+
+    fn get_tcts_by_machine(&self) -> &Vec<usize> {
+        &self.tcts_by_machine
     }
 
     fn get_tasks_by_machine(&self) -> &Vec<Vec<usize>> {
@@ -44,22 +46,30 @@ impl GreedySolution {
                 .enumerate()
                 .filter(|(index, _)| !asigned_tasks.contains(index))
                 .map(|(index, setup)| (index, setup + instance.task_times()[index]))
-                .min_by_key(|(_, cost)| *cost)
-                .map(|(index, _)| index);
-            let task = match task {
-                Some(val) => val,
+                .min_by_key(|(_, cost)| *cost);
+            let (task, tct_increment) = match task {
+                Some(values) => values,
                 None => break,
             };
             self.task_assignment_matrix.push(vec![task]);
+            self.tcts_by_machine.push(tct_increment);
             asigned_tasks.insert(task);
         }
+    }
+
+    fn add_task(&mut self, instance: &ProblemInstance, asigned_tasks: &mut HashSet<usize>) {
+        let (machine, task, tct_increment) =
+            self.get_best_next_machine_and_task(instance, asigned_tasks);
+        self.task_assignment_matrix[machine].push(task);
+        asigned_tasks.insert(task);
+        self.tcts_by_machine[machine] += tct_increment;
     }
 
     fn get_best_next_machine_and_task(
         &self,
         instance: &ProblemInstance,
         asigned_tasks: &HashSet<usize>,
-    ) -> (usize, usize) {
+    ) -> (usize, usize, usize) {
         self.task_assignment_matrix
             .iter()
             .enumerate()
@@ -70,7 +80,7 @@ impl GreedySolution {
                 )
             })
             .min_by_key(|(_, (_, cost))| *cost)
-            .map(|(machine, (task, _))| (machine, task))
+            .map(|(machine, (task, tct_increment))| (machine, task, tct_increment))
             // Panics if all the tasks have been asigned. This function shouldn't be called in such cases
             .unwrap()
     }

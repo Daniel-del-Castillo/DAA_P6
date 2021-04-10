@@ -8,6 +8,8 @@ pub trait ProblemSolution {
 
     fn get_total_completion_time(&self) -> usize;
 
+    fn get_tcts_by_machine(&self) -> &Vec<usize>;
+
     fn get_tasks_by_machine(&self) -> &Vec<Vec<usize>>;
 
     fn calculate_total_completion_time(
