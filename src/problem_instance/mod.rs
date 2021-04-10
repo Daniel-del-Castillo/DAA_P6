@@ -18,20 +18,14 @@ impl ProblemInstance {
         let mut file_reader = BufReader::new(File::open(path)?);
         let mut line = String::new();
         file_reader.read_line(&mut line)?;
-        let number_of_tasks = match ProblemInstance::parse_usize_with_prefix(&line, "n:") {
-            Some(s) => s,
-            None => return Err(ProblemInstanceError::SyntaxError(1)),
-        };
+        let number_of_tasks = ProblemInstance::parse_usize_with_prefix(&line, "n:")
+            .ok_or_else(|| ProblemInstanceError::SyntaxError(1))?;
         file_reader.read_line(&mut line)?;
-        let number_of_machines = match ProblemInstance::parse_usize_with_prefix(&line, "m:") {
-            Some(s) => s,
-            None => return Err(ProblemInstanceError::SyntaxError(2)),
-        };
+        let number_of_machines = ProblemInstance::parse_usize_with_prefix(&line, "m:")
+            .ok_or_else(|| ProblemInstanceError::SyntaxError(2))?;
         file_reader.read_line(&mut line)?;
-        let task_times = match ProblemInstance::parse_usize_list(&line, SEPARATOR) {
-            Some(times) if times.len() == number_of_tasks => times,
-            _ => return Err(ProblemInstanceError::SyntaxError(3)),
-        };
+        let task_times = ProblemInstance::parse_usize_list(&line, SEPARATOR)
+            .ok_or_else(|| ProblemInstanceError::SyntaxError(2))?;
         file_reader.read_line(&mut line)?; // separator line
         let mut setup_times = Vec::new();
         for i in 0..=number_of_tasks {
