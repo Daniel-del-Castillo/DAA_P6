@@ -1,15 +1,15 @@
 use super::{ProblemInstance, ProblemSolution};
 use std::collections::hash_set::HashSet;
 
-pub struct GreedySolution {
+pub struct FastGreedySolution {
     tcts_by_machine: Vec<usize>,
     task_assignment_matrix: Vec<Vec<usize>>,
 }
 
-impl ProblemSolution for GreedySolution {
+impl ProblemSolution for FastGreedySolution {
     fn solve(instance: &ProblemInstance) -> Self {
         let mut asigned_tasks = HashSet::with_capacity(instance.task_times().len());
-        let mut solution = GreedySolution {
+        let mut solution = FastGreedySolution {
             tcts_by_machine: Vec::with_capacity(instance.number_of_machines()),
             task_assignment_matrix: Vec::with_capacity(instance.number_of_machines()),
         };
@@ -33,7 +33,13 @@ impl ProblemSolution for GreedySolution {
     }
 }
 
-impl GreedySolution {
+struct NewTask {
+    machine: usize,
+    task: usize,
+    tct_increment: usize,
+}
+
+impl FastGreedySolution {
     fn choose_initial_tasks(
         &mut self,
         instance: &ProblemInstance,
@@ -58,55 +64,44 @@ impl GreedySolution {
     }
 
     fn add_task(&mut self, instance: &ProblemInstance, asigned_tasks: &mut HashSet<usize>) {
-        let (machine, task, position, tct_increment) =
-            self.get_best_next_machine_task_and_position(instance, asigned_tasks);
-        self.task_assignment_matrix[machine].insert(position, task);
-        asigned_tasks.insert(task);
-        self.tcts_by_machine[machine] += tct_increment;
+        let new_task = self.get_best_next_machine_and_task(instance, asigned_tasks);
+        self.task_assignment_matrix[new_task.machine].push(new_task.task);
+        asigned_tasks.insert(new_task.task);
+        self.tcts_by_machine[new_task.machine] += new_task.tct_increment;
     }
 
-    fn get_best_next_machine_task_and_position(
+    fn get_best_next_machine_and_task(
         &self,
         instance: &ProblemInstance,
         asigned_tasks: &HashSet<usize>,
-    ) -> (usize, usize, usize, usize) {
-        self.task_assignment_matrix
-            .iter()
-            .enumerate()
-            .map(|(index, machine_tasks)| {
-                (
-                    index,
-                    GreedySolution::get_best_next_task(instance, machine_tasks, &asigned_tasks),
-                )
-            })
-            .min_by_key(|(_, (_, cost))| *cost)
-            .map(|(machine, (task, tct_increment))| (machine, task, tct_increment))
+    ) -> NewTask {
+        (0..instance.number_of_machines())
+            .map(|machine| self.get_best_next_task_for_machine(instance, machine, &asigned_tasks))
+            .min_by_key(|new_task| new_task.tct_increment)
             // Panics if all the tasks have been asigned. This function shouldn't be called in such cases
-            .unwrap();
-        (0, 0, 0, 0)
+            .unwrap()
     }
 
-    fn get_best_next_task(
+    fn get_best_next_task_for_machine(
+        &self,
         instance: &ProblemInstance,
-        task_list: &Vec<usize>,
+        machine: usize,
         asigned_tasks: &HashSet<usize>,
-    ) -> (usize, usize) {
-        let base_tct_increment =
-            GreedySolution::calculate_total_completion_time(instance, &task_list);
+    ) -> NewTask {
         instance
             .task_times()
             .iter()
             .enumerate()
             .filter(|(index, _)| !asigned_tasks.contains(index))
-            .map(|(task_index, task_time)| {
-                (
-                    task_index,
-                    base_tct_increment
-                        + task_time
-                        + instance.setup_times()[task_list.last().unwrap() + 1][task_index + 1],
-                )
+            .map(|(task, task_time)| NewTask {
+                task,
+                machine,
+                tct_increment: self.tcts_by_machine[machine]
+                    + task_time
+                    + instance.setup_times()
+                        [self.task_assignment_matrix[machine].last().unwrap() + 1][task + 1],
             })
-            .min_by_key(|(_, cost)| *cost)
+            .min_by_key(|new_task| new_task.tct_increment)
             // Panics if all the tasks have been asigned. This function shouldn't be called in such cases
             .unwrap()
     }

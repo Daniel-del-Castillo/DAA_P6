@@ -3,7 +3,7 @@ use std::env;
 mod problem_instance;
 use problem_instance::ProblemInstance;
 mod problem_solution;
-use problem_solution::{GreedySolution, ProblemSolution};
+use problem_solution::{FastGreedySolution, GreedySolution, ProblemSolution};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -22,7 +22,13 @@ fn main() {
             return;
         }
     };
-    let solution = GreedySolution::solve(&instance);
+    // let solution = GreedySolution::solve(&instance);
+    // print_solution(solution);
+    let solution = FastGreedySolution::solve(&instance);
+    print_solution(solution);
+}
+
+fn print_solution(solution: impl ProblemSolution) {
     println!(
         "The solution found has a total completion time of {}",
         solution.get_total_completion_time()
@@ -38,7 +44,7 @@ fn main() {
             "{{ {} }}",
             task_list
                 .iter()
-                .map(|num| num.to_string())
+                .map(|num| (num + 1).to_string())
                 .collect::<Vec<String>>()
                 .join(", ")
         );
@@ -48,10 +54,10 @@ fn main() {
 fn print_help() {
     println!("You should call this program providing as argument the path to a problem instance");
     print!("The file should have the following format");
-    println!("you should substitute the {{}} with the correct values):");
+    println!("you should substitute the {{}} with the correct values and use a tab as separator):");
     println!("n:\t{{number of tasks}}");
     println!("m:\t{{number of machines}}");
-    println!("{{whatever but without have tabs}} {{list of task times separated by tabs}}");
+    println!("{{whatever but without have tabs}}\t{{list of task times separated by tabs}}");
     println!("{{a line, you can put here whatever you want}}");
     println!("{{list of setup times to go from inactive to each task}}");
     println!("{{list of setup times to go from task 1 to each task}}");

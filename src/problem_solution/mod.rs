@@ -1,6 +1,8 @@
 use super::ProblemInstance;
 
+mod fast_greedy_solution;
 mod greedy_solution;
+pub use fast_greedy_solution::FastGreedySolution;
 pub use greedy_solution::GreedySolution;
 
 pub trait ProblemSolution {
