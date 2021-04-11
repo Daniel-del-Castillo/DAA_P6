@@ -63,6 +63,19 @@ impl ProblemInstance {
             .collect()
     }
 
+    pub fn calculate_total_completion_time(&self, task_index_list: Vec<usize>) -> usize {
+        task_index_list
+            .iter()
+            .zip(task_index_list.iter().skip(1))
+            .fold(
+                self.task_times()[task_index_list[0]]
+                    + self.setup_times()[0][task_index_list[0] + 1],
+                |acc, (&prev, &actual)| {
+                    acc * 2 + self.task_times()[actual] + self.setup_times()[prev + 1][actual + 1]
+                },
+            )
+    }
+
     pub fn number_of_machines(&self) -> usize {
         self.number_of_machines
     }
@@ -106,5 +119,20 @@ mod tests {
             ProblemInstance::parse_usize_list("45\t3\t23\ta", "\t"),
             None
         );
+    }
+
+    #[test]
+    fn tct() {
+        let instance = ProblemInstance {
+            number_of_machines: 2,
+            task_times: vec![1, 2, 4],
+            setup_times: vec![
+                vec![0, 0, 2, 3],
+                vec![1, 0, 4, 3],
+                vec![3, 2, 0, 2],
+                vec![1, 0, 2, 0],
+            ],
+        };
+        assert_eq!(instance.calculate_total_completion_time(vec![0, 1, 2]), 22);
     }
 }

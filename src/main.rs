@@ -22,9 +22,11 @@ fn main() {
             return;
         }
     };
-    // let solution = GreedySolution::solve(&instance);
-    // print_solution(solution);
+    let solution = GreedySolution::solve(&instance);
+    println!("\nSolution with a greedy algorithm:");
+    print_solution(solution);
     let solution = FastGreedySolution::solve(&instance);
+    println!("\nSolution with a greedier algorithm:");
     print_solution(solution);
 }
 
