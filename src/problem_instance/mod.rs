@@ -63,15 +63,17 @@ impl ProblemInstance {
             .collect()
     }
 
-    pub fn calculate_total_completion_time(&self, task_index_list: Vec<usize>) -> usize {
-        task_index_list
+    pub fn calculate_total_completion_time(&self, task_list: Vec<usize>) -> usize {
+        task_list
             .iter()
-            .zip(task_index_list.iter().skip(1))
+            .zip(task_list.iter().skip(1))
+            .enumerate()
             .fold(
-                self.task_times()[task_index_list[0]]
-                    + self.setup_times()[0][task_index_list[0] + 1],
-                |acc, (&prev, &actual)| {
-                    acc * 2 + self.task_times()[actual] + self.setup_times()[prev + 1][actual + 1]
+                task_list.len()
+                    * (self.task_times()[task_list[0]] + self.setup_times()[0][task_list[0] + 1]),
+                |acc, (index, (&prev, &actual))| {
+                    acc + (task_list.len() - index - 1)
+                        * (self.task_times()[actual] + self.setup_times()[prev + 1][actual + 1])
                 },
             )
     }
@@ -133,6 +135,6 @@ mod tests {
                 vec![1, 0, 2, 0],
             ],
         };
-        assert_eq!(instance.calculate_total_completion_time(vec![0, 1, 2]), 22);
+        assert_eq!(instance.calculate_total_completion_time(vec![0, 1, 2]), 21);
     }
 }
