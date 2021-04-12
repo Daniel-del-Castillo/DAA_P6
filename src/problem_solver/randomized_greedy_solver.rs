@@ -1,11 +1,13 @@
 use super::{ProblemInstance, ProblemSolution, ProblemSolver};
-use std::collections::HashSet;
+use std::cmp::Ordering;
+use std::collections::{BinaryHeap, HashSet};
 
-pub struct GreedySolver {
+pub struct RandomizedGreedySolver {
+    size_to_choose_from: usize,
     solution: ProblemSolution,
 }
 
-impl ProblemSolver for GreedySolver {
+impl ProblemSolver for RandomizedGreedySolver {
     fn solve(mut self, instance: &ProblemInstance) -> ProblemSolution {
         let mut asigned_tasks = HashSet::with_capacity(instance.task_times().len());
         self.solution = ProblemSolution {
@@ -20,6 +22,7 @@ impl ProblemSolver for GreedySolver {
     }
 }
 
+#[derive(Eq)]
 struct NewTask {
     machine: usize,
     task: usize,
@@ -27,9 +30,28 @@ struct NewTask {
     tct_increment: usize,
 }
 
-impl GreedySolver {
-    pub fn new() -> Self {
-        GreedySolver {
+impl Ord for NewTask {
+    fn cmp(&self, other: &Self) -> Ordering {
+        other.tct_increment.cmp(&self.tct_increment)
+    }
+}
+
+impl PartialOrd for NewTask {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl PartialEq for NewTask {
+    fn eq(&self, other: &Self) -> bool {
+        self.tct_increment == other.tct_increment
+    }
+}
+
+impl RandomizedGreedySolver {
+    pub fn new(size_to_choose_from: usize) -> Self {
+        RandomizedGreedySolver {
+            size_to_choose_from,
             solution: ProblemSolution {
                 task_assignment_matrix: Vec::new(),
                 tcts_by_machine: Vec::new(),
@@ -61,23 +83,34 @@ impl GreedySolver {
     }
 
     fn add_task(&mut self, instance: &ProblemInstance, asigned_tasks: &mut HashSet<usize>) {
-        let new_task = self.get_best_new_task(instance, asigned_tasks);
-        self.solution.task_assignment_matrix[new_task.machine]
-            .insert(new_task.position, new_task.task);
-        asigned_tasks.insert(new_task.task);
-        self.solution.tcts_by_machine[new_task.machine] += new_task.tct_increment;
+        let possible_tasks = self.get_best_new_task(instance, asigned_tasks);
+        let election = rand::random::<usize>() % self.size_to_choose_from;
+        self.solution.task_assignment_matrix[possible_tasks[election].machine].insert(
+            possible_tasks[election].position,
+            possible_tasks[election].task,
+        );
+        asigned_tasks.insert(possible_tasks[election].task);
+        self.solution.tcts_by_machine[possible_tasks[election].machine] +=
+            possible_tasks[election].tct_increment;
     }
 
     fn get_best_new_task(
         &self,
         instance: &ProblemInstance,
         asigned_tasks: &HashSet<usize>,
-    ) -> NewTask {
-        (0..instance.number_of_machines())
-            .map(|machine| self.get_best_new_task_by_machine(instance, machine, &asigned_tasks))
-            .min_by_key(|new_task| new_task.tct_increment)
-            // Panics if all the tasks have been asigned. This function shouldn't be called in such cases
-            .unwrap()
+    ) -> Vec<NewTask> {
+        let mut new_tasks = (0..instance.number_of_machines())
+            .map(|machine| {
+                self.get_best_new_task_by_machine(instance, machine, &asigned_tasks)
+                    .into_iter()
+            })
+            .flatten()
+            .collect::<BinaryHeap<NewTask>>();
+        (0..self.size_to_choose_from)
+            .map(|_| new_tasks.pop())
+            .filter(|task| task.is_some())
+            .map(|task| task.unwrap())
+            .collect()
     }
 
     fn get_best_new_task_by_machine(
@@ -85,13 +118,20 @@ impl GreedySolver {
         instance: &ProblemInstance,
         machine: usize,
         asigned_tasks: &HashSet<usize>,
-    ) -> NewTask {
-        (0..instance.task_times().len())
+    ) -> Vec<NewTask> {
+        let mut new_tasks = (0..instance.task_times().len())
             .filter(|index| !asigned_tasks.contains(index))
-            .map(|task| self.get_best_new_task_by_task_and_machine(instance, task, machine))
-            .min_by_key(|new_task| new_task.tct_increment)
-            // Panics if all the tasks have been asigned. This function shouldn't be called in such cases
-            .unwrap()
+            .map(|task| {
+                self.get_best_new_task_by_task_and_machine(instance, task, machine)
+                    .into_iter()
+            })
+            .flatten()
+            .collect::<BinaryHeap<NewTask>>();
+        (0..self.size_to_choose_from)
+            .map(|_| new_tasks.pop())
+            .filter(|task| task.is_some())
+            .map(|task| task.unwrap())
+            .collect()
     }
 
     fn get_best_new_task_by_task_and_machine(
@@ -99,8 +139,8 @@ impl GreedySolver {
         instance: &ProblemInstance,
         task: usize,
         machine: usize,
-    ) -> NewTask {
-        (0..=self.solution.task_assignment_matrix[machine].len())
+    ) -> Vec<NewTask> {
+        let mut new_tasks = (0..=self.solution.task_assignment_matrix[machine].len())
             .map(|position| {
                 let mut task_list = self.solution.task_assignment_matrix[machine].clone();
                 task_list.insert(position, task);
@@ -113,8 +153,11 @@ impl GreedySolver {
                     tct_increment,
                 }
             })
-            .min_by_key(|new_task| new_task.tct_increment)
-            // Panics if all the tasks have been asigned. This function shouldn't be called in such cases
-            .unwrap()
+            .collect::<BinaryHeap<NewTask>>();
+        (0..self.size_to_choose_from)
+            .map(|_| new_tasks.pop())
+            .filter(|task| task.is_some())
+            .map(|task| task.unwrap())
+            .collect()
     }
 }

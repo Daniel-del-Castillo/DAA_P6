@@ -1,5 +1,5 @@
 use super::{ProblemInstance, ProblemSolution, ProblemSolver};
-use std::collections::hash_set::HashSet;
+use std::collections::HashSet;
 
 pub struct FastGreedySolver {
     solution: ProblemSolution,
@@ -60,25 +60,25 @@ impl FastGreedySolver {
     }
 
     fn add_task(&mut self, instance: &ProblemInstance, asigned_tasks: &mut HashSet<usize>) {
-        let new_task = self.get_best_next_machine_and_task(instance, asigned_tasks);
+        let new_task = self.get_best_new_task(instance, asigned_tasks);
         self.solution.task_assignment_matrix[new_task.machine].push(new_task.task);
         asigned_tasks.insert(new_task.task);
         self.solution.tcts_by_machine[new_task.machine] += new_task.tct_increment;
     }
 
-    fn get_best_next_machine_and_task(
+    fn get_best_new_task(
         &self,
         instance: &ProblemInstance,
         asigned_tasks: &HashSet<usize>,
     ) -> NewTask {
         (0..instance.number_of_machines())
-            .map(|machine| self.get_best_next_task_for_machine(instance, machine, &asigned_tasks))
+            .map(|machine| self.get_best_new_task_by_machine(instance, machine, &asigned_tasks))
             .min_by_key(|new_task| new_task.tct_increment)
             // Panics if all the tasks have been asigned. This function shouldn't be called in such cases
             .unwrap()
     }
 
-    fn get_best_next_task_for_machine(
+    fn get_best_new_task_by_machine(
         &self,
         instance: &ProblemInstance,
         machine: usize,

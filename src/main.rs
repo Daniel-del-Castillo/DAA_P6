@@ -3,7 +3,9 @@ use std::env;
 mod problem_instance;
 use problem_instance::ProblemInstance;
 mod problem_solver;
-use problem_solver::{FastGreedySolver, GreedySolver, ProblemSolution, ProblemSolver};
+use problem_solver::{
+    FastGreedySolver, GreedySolver, ProblemSolution, ProblemSolver, RandomizedGreedySolver,
+};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -29,6 +31,10 @@ fn main() {
     let solver = FastGreedySolver::new();
     let solution = solver.solve(&instance);
     println!("\nSolution with a greedier algorithm:");
+    print_solution(solution);
+    let solver = RandomizedGreedySolver::new(2);
+    let solution = solver.solve(&instance);
+    println!("\nSolution with a randomized greedy algorithm:");
     print_solution(solution);
 }
 
