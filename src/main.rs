@@ -2,8 +2,8 @@ use std::env;
 
 mod problem_instance;
 use problem_instance::ProblemInstance;
-mod problem_solution;
-use problem_solution::{FastGreedySolution, GreedySolution, ProblemSolution};
+mod problem_solver;
+use problem_solver::{FastGreedySolver, GreedySolver, ProblemSolution, ProblemSolver};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -22,15 +22,17 @@ fn main() {
             return;
         }
     };
-    let solution = GreedySolution::solve(&instance);
+    let solver = GreedySolver::new();
+    let solution = solver.solve(&instance);
     println!("\nSolution with a greedy algorithm:");
     print_solution(solution);
-    let solution = FastGreedySolution::solve(&instance);
+    let solver = FastGreedySolver::new();
+    let solution = solver.solve(&instance);
     println!("\nSolution with a greedier algorithm:");
     print_solution(solution);
 }
 
-fn print_solution(solution: impl ProblemSolution) {
+fn print_solution(solution: ProblemSolution) {
     println!(
         "The solution found has a total completion time of {}",
         solution.get_total_completion_time()

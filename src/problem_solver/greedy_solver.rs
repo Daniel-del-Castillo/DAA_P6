@@ -1,45 +1,42 @@
-use super::{ProblemInstance, ProblemSolution};
+use super::{ProblemInstance, ProblemSolution, ProblemSolver};
 use std::collections::hash_set::HashSet;
 
-pub struct FastGreedySolution {
-    tcts_by_machine: Vec<usize>,
-    task_assignment_matrix: Vec<Vec<usize>>,
+pub struct GreedySolver {
+    solution: ProblemSolution,
 }
 
-impl ProblemSolution for FastGreedySolution {
-    fn solve(instance: &ProblemInstance) -> Self {
+impl ProblemSolver for GreedySolver {
+    fn solve(mut self, instance: &ProblemInstance) -> ProblemSolution {
         let mut asigned_tasks = HashSet::with_capacity(instance.task_times().len());
-        let mut solution = FastGreedySolution {
+        self.solution = ProblemSolution {
             tcts_by_machine: Vec::with_capacity(instance.number_of_machines()),
             task_assignment_matrix: Vec::with_capacity(instance.number_of_machines()),
         };
-        solution.choose_initial_tasks(instance, &mut asigned_tasks);
+        self.choose_initial_tasks(instance, &mut asigned_tasks);
         while asigned_tasks.len() < instance.task_times().len() {
-            solution.add_task(instance, &mut asigned_tasks);
+            self.add_task(instance, &mut asigned_tasks);
         }
-        solution
-    }
-
-    fn get_total_completion_time(&self) -> usize {
-        self.tcts_by_machine.iter().sum()
-    }
-
-    fn get_tcts_by_machine(&self) -> &Vec<usize> {
-        &self.tcts_by_machine
-    }
-
-    fn get_tasks_by_machine(&self) -> &Vec<Vec<usize>> {
-        &self.task_assignment_matrix
+        self.solution
     }
 }
 
 struct NewTask {
     machine: usize,
     task: usize,
+    position: usize,
     tct_increment: usize,
 }
 
-impl FastGreedySolution {
+impl GreedySolver {
+    pub fn new() -> Self {
+        GreedySolver {
+            solution: ProblemSolution {
+                task_assignment_matrix: Vec::new(),
+                tcts_by_machine: Vec::new(),
+            },
+        }
+    }
+
     fn choose_initial_tasks(
         &mut self,
         instance: &ProblemInstance,
@@ -57,17 +54,18 @@ impl FastGreedySolution {
                 Some(values) => values,
                 None => break,
             };
-            self.task_assignment_matrix.push(vec![task]);
-            self.tcts_by_machine.push(tct_increment);
+            self.solution.task_assignment_matrix.push(vec![task]);
+            self.solution.tcts_by_machine.push(tct_increment);
             asigned_tasks.insert(task);
         }
     }
 
     fn add_task(&mut self, instance: &ProblemInstance, asigned_tasks: &mut HashSet<usize>) {
         let new_task = self.get_best_next_machine_and_task(instance, asigned_tasks);
-        self.task_assignment_matrix[new_task.machine].push(new_task.task);
+        self.solution.task_assignment_matrix[new_task.machine]
+            .insert(new_task.position, new_task.task);
         asigned_tasks.insert(new_task.task);
-        self.tcts_by_machine[new_task.machine] += new_task.tct_increment;
+        self.solution.tcts_by_machine[new_task.machine] += new_task.tct_increment;
     }
 
     fn get_best_next_machine_and_task(
@@ -90,13 +88,27 @@ impl FastGreedySolution {
     ) -> NewTask {
         (0..instance.task_times().len())
             .filter(|index| !asigned_tasks.contains(index))
-            .map(|task| {
-                let mut task_list = self.task_assignment_matrix[machine].clone();
-                task_list.push(task);
+            .map(|task| self.get_best_pos_for_task_in_machine(instance, task, machine))
+            .min_by_key(|new_task| new_task.tct_increment)
+            // Panics if all the tasks have been asigned. This function shouldn't be called in such cases
+            .unwrap()
+    }
+
+    fn get_best_pos_for_task_in_machine(
+        &self,
+        instance: &ProblemInstance,
+        task: usize,
+        machine: usize,
+    ) -> NewTask {
+        (0..=self.solution.task_assignment_matrix[machine].len())
+            .map(|position| {
+                let mut task_list = self.solution.task_assignment_matrix[machine].clone();
+                task_list.insert(position, task);
                 let tct_increment = instance.calculate_total_completion_time(task_list)
-                    - self.tcts_by_machine[machine];
+                    - self.solution.tcts_by_machine[machine];
                 NewTask {
                     task,
+                    position,
                     machine,
                     tct_increment,
                 }
