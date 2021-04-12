@@ -36,7 +36,7 @@ impl ProblemSolution for FastGreedySolution {
 struct NewTask {
     machine: usize,
     task: usize,
-    tct: usize,
+    tct_increment: usize,
 }
 
 impl FastGreedySolution {
@@ -67,7 +67,7 @@ impl FastGreedySolution {
         let new_task = self.get_best_next_machine_and_task(instance, asigned_tasks);
         self.task_assignment_matrix[new_task.machine].push(new_task.task);
         asigned_tasks.insert(new_task.task);
-        self.tcts_by_machine[new_task.machine] = new_task.tct;
+        self.tcts_by_machine[new_task.machine] += new_task.tct_increment;
     }
 
     fn get_best_next_machine_and_task(
@@ -77,7 +77,7 @@ impl FastGreedySolution {
     ) -> NewTask {
         (0..instance.number_of_machines())
             .map(|machine| self.get_best_next_task_for_machine(instance, machine, &asigned_tasks))
-            .min_by_key(|new_task| new_task.tct)
+            .min_by_key(|new_task| new_task.tct_increment)
             // Panics if all the tasks have been asigned. This function shouldn't be called in such cases
             .unwrap()
     }
@@ -93,10 +93,15 @@ impl FastGreedySolution {
             .map(|task| {
                 let mut task_list = self.task_assignment_matrix[machine].clone();
                 task_list.push(task);
-                let tct = instance.calculate_total_completion_time(task_list);
-                NewTask { task, machine, tct }
+                let tct_increment = instance.calculate_total_completion_time(task_list)
+                    - self.tcts_by_machine[machine];
+                NewTask {
+                    task,
+                    machine,
+                    tct_increment,
+                }
             })
-            .min_by_key(|new_task| new_task.tct)
+            .min_by_key(|new_task| new_task.tct_increment)
             // Panics if all the tasks have been asigned. This function shouldn't be called in such cases
             .unwrap()
     }

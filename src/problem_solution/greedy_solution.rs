@@ -37,7 +37,7 @@ struct NewTask {
     machine: usize,
     task: usize,
     position: usize,
-    tct: usize,
+    tct_increment: usize,
 }
 
 impl GreedySolution {
@@ -68,7 +68,7 @@ impl GreedySolution {
         let new_task = self.get_best_next_machine_and_task(instance, asigned_tasks);
         self.task_assignment_matrix[new_task.machine].insert(new_task.position, new_task.task);
         asigned_tasks.insert(new_task.task);
-        self.tcts_by_machine[new_task.machine] = new_task.tct;
+        self.tcts_by_machine[new_task.machine] += new_task.tct_increment;
     }
 
     fn get_best_next_machine_and_task(
@@ -78,7 +78,7 @@ impl GreedySolution {
     ) -> NewTask {
         (0..instance.number_of_machines())
             .map(|machine| self.get_best_next_task_for_machine(instance, machine, &asigned_tasks))
-            .min_by_key(|new_task| new_task.tct)
+            .min_by_key(|new_task| new_task.tct_increment)
             // Panics if all the tasks have been asigned. This function shouldn't be called in such cases
             .unwrap()
     }
@@ -92,7 +92,7 @@ impl GreedySolution {
         (0..instance.task_times().len())
             .filter(|index| !asigned_tasks.contains(index))
             .map(|task| self.get_best_pos_for_task_in_machine(instance, task, machine))
-            .min_by_key(|new_task| new_task.tct)
+            .min_by_key(|new_task| new_task.tct_increment)
             // Panics if all the tasks have been asigned. This function shouldn't be called in such cases
             .unwrap()
     }
@@ -107,15 +107,16 @@ impl GreedySolution {
             .map(|position| {
                 let mut task_list = self.task_assignment_matrix[machine].clone();
                 task_list.insert(position, task);
-                let tct = instance.calculate_total_completion_time(task_list);
+                let tct_increment = instance.calculate_total_completion_time(task_list)
+                    - self.tcts_by_machine[machine];
                 NewTask {
                     task,
                     position,
                     machine,
-                    tct,
+                    tct_increment,
                 }
             })
-            .min_by_key(|new_task| new_task.tct)
+            .min_by_key(|new_task| new_task.tct_increment)
             // Panics if all the tasks have been asigned. This function shouldn't be called in such cases
             .unwrap()
     }
