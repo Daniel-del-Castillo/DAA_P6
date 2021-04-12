@@ -1,4 +1,4 @@
-use super::{ProblemInstance, ProblemSolution, ProblemSolver};
+use super::{NewTask, ProblemInstance, ProblemSolution, ProblemSolver};
 use std::collections::HashSet;
 
 pub struct FastGreedySolver {
@@ -18,12 +18,6 @@ impl ProblemSolver for FastGreedySolver {
         }
         self.solution
     }
-}
-
-struct NewTask {
-    machine: usize,
-    task: usize,
-    tct_increment: usize,
 }
 
 impl FastGreedySolver {
@@ -95,6 +89,7 @@ impl FastGreedySolver {
                     task,
                     machine,
                     tct_increment,
+                    position: 0,
                 }
             })
             .min_by_key(|new_task| new_task.tct_increment)

@@ -1,4 +1,4 @@
-use super::{ProblemInstance, ProblemSolution, ProblemSolver};
+use super::{NewTask, ProblemInstance, ProblemSolution, ProblemSolver};
 use std::collections::HashSet;
 
 pub struct GreedySolver {
@@ -18,13 +18,6 @@ impl ProblemSolver for GreedySolver {
         }
         self.solution
     }
-}
-
-struct NewTask {
-    machine: usize,
-    task: usize,
-    position: usize,
-    tct_increment: usize,
 }
 
 impl GreedySolver {

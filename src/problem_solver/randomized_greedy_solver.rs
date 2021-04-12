@@ -1,5 +1,4 @@
-use super::{ProblemInstance, ProblemSolution, ProblemSolver};
-use std::cmp::Ordering;
+use super::{NewTask, ProblemInstance, ProblemSolution, ProblemSolver};
 use std::collections::{BinaryHeap, HashSet};
 
 pub struct RandomizedGreedySolver {
@@ -19,32 +18,6 @@ impl ProblemSolver for RandomizedGreedySolver {
             self.add_task(instance, &mut asigned_tasks);
         }
         self.solution
-    }
-}
-
-#[derive(Eq)]
-struct NewTask {
-    machine: usize,
-    task: usize,
-    position: usize,
-    tct_increment: usize,
-}
-
-impl Ord for NewTask {
-    fn cmp(&self, other: &Self) -> Ordering {
-        other.tct_increment.cmp(&self.tct_increment)
-    }
-}
-
-impl PartialOrd for NewTask {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl PartialEq for NewTask {
-    fn eq(&self, other: &Self) -> bool {
-        self.tct_increment == other.tct_increment
     }
 }
 
@@ -84,7 +57,7 @@ impl RandomizedGreedySolver {
 
     fn add_task(&mut self, instance: &ProblemInstance, asigned_tasks: &mut HashSet<usize>) {
         let possible_tasks = self.get_best_new_task(instance, asigned_tasks);
-        let election = rand::random::<usize>() % self.size_to_choose_from;
+        let election = rand::random::<usize>() % possible_tasks.len();
         self.solution.task_assignment_matrix[possible_tasks[election].machine].insert(
             possible_tasks[election].position,
             possible_tasks[election].task,

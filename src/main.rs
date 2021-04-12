@@ -4,7 +4,7 @@ mod problem_instance;
 use problem_instance::ProblemInstance;
 mod problem_solver;
 use problem_solver::{
-    FastGreedySolver, GreedySolver, ProblemSolution, ProblemSolver, RandomizedGreedySolver,
+    FastGreedySolver, GreedySolver, ProblemSolution, ProblemSolver, RandomizedGreedySolver, GRASP,
 };
 
 fn main() {
@@ -32,9 +32,13 @@ fn main() {
     let solution = solver.solve(&instance);
     println!("\nSolution with a greedier algorithm:");
     print_solution(solution);
-    let solver = RandomizedGreedySolver::new(2);
+    let solver = RandomizedGreedySolver::new(3);
     let solution = solver.solve(&instance);
     println!("\nSolution with a randomized greedy algorithm:");
+    print_solution(solution);
+    let solver = GRASP::new(3, 20);
+    let solution = solver.solve(&instance);
+    println!("\nSolution with a (constructive only) GRASP algorithm:");
     print_solution(solution);
 }
 
