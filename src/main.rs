@@ -4,8 +4,9 @@ mod problem_instance;
 use problem_instance::ProblemInstance;
 mod problem_solver;
 use problem_solver::grasp::local_search::{
-    InterMachineSwap, IntraMachineReinsertion, IntraMachineSwap, NoSearch,
+    InterMachineReinsertion, InterMachineSwap, IntraMachineReinsertion, IntraMachineSwap, NoSearch,
 };
+use problem_solver::grasp::stop_criterion::{IterationsWithoutChange, TotalIterations};
 use problem_solver::{
     FastGreedySolver, GreedySolver, ProblemSolution, ProblemSolver, RandomizedGreedySolver, GRASP,
 };
@@ -39,21 +40,76 @@ fn main() {
     let solution = solver.solve(&instance);
     println!("\nSolution with a randomized greedy algorithm:");
     print_solution(solution);
-    let solver = GRASP::new(3, 200, NoSearch::new());
+    let solver = GRASP::new(3, NoSearch::new(), TotalIterations::new(1000));
     let solution = solver.solve(&instance);
-    println!("\nSolution with a (constructive only) GRASP algorithm:");
+    println!("\nSolution with a (constructive only) GRASP algorithm with 1000 iterations:");
     print_solution(solution);
-    let solver = GRASP::new(3, 200, IntraMachineReinsertion::new());
+    let solver = GRASP::new(
+        3,
+        IntraMachineReinsertion::new(),
+        TotalIterations::new(1000),
+    );
     let solution = solver.solve(&instance);
-    println!("\nSolution with a GRASP algorithm with intra machine reinsertion search:");
+    println!("\nSolution with a GRASP algorithm with intra machine reinsertion search with 1000 iterations:");
     print_solution(solution);
-    let solver = GRASP::new(3, 200, IntraMachineSwap::new());
+    let solver = GRASP::new(
+        3,
+        InterMachineReinsertion::new(),
+        TotalIterations::new(1000),
+    );
     let solution = solver.solve(&instance);
-    println!("\nSolution with a GRASP algorithm with intra machine swap search:");
+    println!("\nSolution with a GRASP algorithm with inter machine reinsertion search with 1000 iterations:");
     print_solution(solution);
-    let solver = GRASP::new(3, 200, InterMachineSwap::new());
+    let solver = GRASP::new(3, IntraMachineSwap::new(), TotalIterations::new(1000));
     let solution = solver.solve(&instance);
-    println!("\nSolution with a GRASP algorithm with inter machine swap search:");
+    println!(
+        "\nSolution with a GRASP algorithm with intra machine swap search with 1000 iterations:"
+    );
+    print_solution(solution);
+    let solver = GRASP::new(3, InterMachineSwap::new(), TotalIterations::new(1000));
+    let solution = solver.solve(&instance);
+    println!(
+        "\nSolution with a GRASP algorithm with inter machine swap search with 1000 iterations:"
+    );
+    print_solution(solution);
+
+    let solver = GRASP::new(3, NoSearch::new(), TotalIterations::new(1000));
+    let solution = solver.solve(&instance);
+    println!(
+        "\nSolution with a (constructive only) GRASP algorithm with 100 iterations without change:"
+    );
+    print_solution(solution);
+    let solver = GRASP::new(
+        3,
+        IntraMachineReinsertion::new(),
+        IterationsWithoutChange::new(100),
+    );
+    let solution = solver.solve(&instance);
+    println!("\nSolution with a GRASP algorithm with intra machine reinsertion search with 100 iterations without change:");
+    print_solution(solution);
+    let solver = GRASP::new(
+        3,
+        InterMachineReinsertion::new(),
+        IterationsWithoutChange::new(100),
+    );
+    let solution = solver.solve(&instance);
+    println!("\nSolution with a GRASP algorithm with inter machine reinsertion search with 100 iterations without change:");
+    print_solution(solution);
+    let solver = GRASP::new(
+        3,
+        IntraMachineSwap::new(),
+        IterationsWithoutChange::new(100),
+    );
+    let solution = solver.solve(&instance);
+    println!("\nSolution with a GRASP algorithm with intra machine swap search with 100 iterations without change:");
+    print_solution(solution);
+    let solver = GRASP::new(
+        3,
+        InterMachineSwap::new(),
+        IterationsWithoutChange::new(100),
+    );
+    let solution = solver.solve(&instance);
+    println!("\nSolution with a GRASP algorithm with inter machine swap search with 100 iterations without change:");
     print_solution(solution);
 }
 
