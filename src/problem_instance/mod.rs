@@ -63,7 +63,7 @@ impl ProblemInstance {
             .collect()
     }
 
-    pub fn calculate_total_completion_time(&self, task_list: Vec<usize>) -> usize {
+    pub fn calculate_total_completion_time(&self, task_list: &Vec<usize>) -> usize {
         task_list
             .iter()
             .zip(task_list.iter().skip(1))
@@ -135,6 +135,6 @@ mod tests {
                 vec![1, 0, 2, 0],
             ],
         };
-        assert_eq!(instance.calculate_total_completion_time(vec![0, 1, 2]), 21);
+        assert_eq!(instance.calculate_total_completion_time(&vec![0, 1, 2]), 21);
     }
 }

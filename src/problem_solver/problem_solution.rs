@@ -1,3 +1,4 @@
+#[derive(Clone)]
 pub struct ProblemSolution {
     pub(super) tcts_by_machine: Vec<usize>,
     pub(super) task_assignment_matrix: Vec<Vec<usize>>,

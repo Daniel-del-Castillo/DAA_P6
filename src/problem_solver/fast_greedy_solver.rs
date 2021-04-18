@@ -83,7 +83,7 @@ impl FastGreedySolver {
             .map(|task| {
                 let mut task_list = self.solution.task_assignment_matrix[machine].clone();
                 task_list.push(task);
-                let tct_increment = instance.calculate_total_completion_time(task_list)
+                let tct_increment = instance.calculate_total_completion_time(&task_list)
                     - self.solution.tcts_by_machine[machine];
                 NewTask {
                     task,
