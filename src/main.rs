@@ -3,10 +3,11 @@ use std::env;
 mod problem_instance;
 use problem_instance::ProblemInstance;
 mod problem_solver;
-use problem_solver::grasp::local_search::{IntraMachineReinsertion, NoSearch};
+use problem_solver::grasp::local_search::{
+    InterMachineSwap, IntraMachineReinsertion, IntraMachineSwap, NoSearch,
+};
 use problem_solver::{
-    grasp::GRASP, FastGreedySolver, GreedySolver, ProblemSolution, ProblemSolver,
-    RandomizedGreedySolver,
+    FastGreedySolver, GreedySolver, ProblemSolution, ProblemSolver, RandomizedGreedySolver, GRASP,
 };
 
 fn main() {
@@ -44,7 +45,15 @@ fn main() {
     print_solution(solution);
     let solver = GRASP::new(3, 200, IntraMachineReinsertion::new());
     let solution = solver.solve(&instance);
-    println!("\nSolution with a GRASP algorithm with Intra machine reinsertion search:");
+    println!("\nSolution with a GRASP algorithm with intra machine reinsertion search:");
+    print_solution(solution);
+    let solver = GRASP::new(3, 200, IntraMachineSwap::new());
+    let solution = solver.solve(&instance);
+    println!("\nSolution with a GRASP algorithm with intra machine swap search:");
+    print_solution(solution);
+    let solver = GRASP::new(3, 200, InterMachineSwap::new());
+    let solution = solver.solve(&instance);
+    println!("\nSolution with a GRASP algorithm with inter machine swap search:");
     print_solution(solution);
 }
 
