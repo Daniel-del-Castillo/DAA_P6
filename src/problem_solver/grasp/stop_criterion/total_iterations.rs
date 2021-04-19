@@ -1,5 +1,6 @@
 use super::StopCriterion;
 
+#[derive(Clone)]
 pub struct TotalIterations {
     total_iterations: usize,
     max_iterations: usize,

@@ -41,8 +41,11 @@ impl IntraMachineReinsertion {
         solution: &ProblemSolution,
         machine: usize,
         task_index: usize,
-        possible_task_index: usize,
+        mut possible_task_index: usize,
     ) -> ProblemSolution {
+        if possible_task_index > task_index {
+            possible_task_index -= 1;
+        }
         let mut possible_solution = solution.clone();
         let task = possible_solution.task_assignment_matrix[machine].remove(task_index);
         possible_solution.task_assignment_matrix[machine].insert(possible_task_index, task);

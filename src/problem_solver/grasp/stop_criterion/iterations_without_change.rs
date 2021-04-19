@@ -1,5 +1,6 @@
 use super::StopCriterion;
 
+#[derive(Clone)]
 pub struct IterationsWithoutChange {
     iterations_without_change: usize,
     max_iterations_without_change: usize,
