@@ -3,31 +3,6 @@ use super::*;
 pub struct InterMachineReinsertion {}
 
 impl LocalSearch for InterMachineReinsertion {
-    fn improve(
-        &self,
-        instance: &ProblemInstance,
-        mut solution: ProblemSolution,
-    ) -> ProblemSolution {
-        loop {
-            let another_solution =
-                match InterMachineReinsertion::perform_search(instance, &solution) {
-                    None => return solution,
-                    Some(another_solution) => another_solution,
-                };
-            if another_solution.get_total_completion_time() >= solution.get_total_completion_time()
-            {
-                return solution;
-            }
-            solution = another_solution;
-        }
-    }
-}
-
-impl InterMachineReinsertion {
-    pub fn new() -> Self {
-        InterMachineReinsertion {}
-    }
-
     fn perform_search(
         instance: &ProblemInstance,
         solution: &ProblemSolution,
@@ -40,6 +15,12 @@ impl InterMachineReinsertion {
                 )
             })
             .min_by_key(|solution| solution.get_total_completion_time())
+    }
+}
+
+impl InterMachineReinsertion {
+    pub fn new() -> Self {
+        InterMachineReinsertion {}
     }
 
     fn get_best_reinsertion_from_machine(
@@ -83,13 +64,12 @@ impl InterMachineReinsertion {
     ) -> ProblemSolution {
         let mut solution = solution.clone();
         let task = solution.task_assignment_matrix[from_machine].remove(task_index);
-        let new_tct = instance
+        solution.tcts_by_machine[from_machine] = instance
             .calculate_total_completion_time(&solution.task_assignment_matrix[from_machine]);
         (0..=solution.task_assignment_matrix[to_machine].len())
             .map(|possible_pos| {
                 let mut possible_solution = solution.clone();
                 possible_solution.task_assignment_matrix[to_machine].insert(possible_pos, task);
-                possible_solution.tcts_by_machine[from_machine] = new_tct;
                 possible_solution.tcts_by_machine[to_machine] = instance
                     .calculate_total_completion_time(
                         &possible_solution.task_assignment_matrix[to_machine],

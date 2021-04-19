@@ -3,30 +3,6 @@ use super::*;
 pub struct IntraMachineReinsertion {}
 
 impl LocalSearch for IntraMachineReinsertion {
-    fn improve(
-        &self,
-        instance: &ProblemInstance,
-        mut solution: ProblemSolution,
-    ) -> ProblemSolution {
-        loop {
-            let another_solution =
-                match IntraMachineReinsertion::perform_search(instance, &solution) {
-                    None => return solution,
-                    Some(another_solution) => another_solution,
-                };
-            if another_solution.get_total_completion_time() >= solution.get_total_completion_time()
-            {
-                return solution;
-            }
-            solution = another_solution;
-        }
-    }
-}
-
-impl IntraMachineReinsertion {
-    pub fn new() -> Self {
-        IntraMachineReinsertion {}
-    }
     fn perform_search(
         instance: &ProblemInstance,
         solution: &ProblemSolution,
@@ -39,6 +15,12 @@ impl IntraMachineReinsertion {
                 )
             })
             .min_by_key(|solution| solution.get_total_completion_time())
+    }
+}
+
+impl IntraMachineReinsertion {
+    pub fn new() -> Self {
+        IntraMachineReinsertion {}
     }
 
     fn get_best_reinsertion_by_machine(

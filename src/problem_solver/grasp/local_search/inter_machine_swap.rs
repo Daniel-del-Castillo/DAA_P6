@@ -4,30 +4,6 @@ use std::mem;
 pub struct InterMachineSwap {}
 
 impl LocalSearch for InterMachineSwap {
-    fn improve(
-        &self,
-        instance: &ProblemInstance,
-        mut solution: ProblemSolution,
-    ) -> ProblemSolution {
-        loop {
-            let another_solution = match InterMachineSwap::perform_search(instance, &solution) {
-                None => return solution,
-                Some(another_solution) => another_solution,
-            };
-            if another_solution.get_total_completion_time() >= solution.get_total_completion_time()
-            {
-                return solution;
-            }
-            solution = another_solution;
-        }
-    }
-}
-
-impl InterMachineSwap {
-    pub fn new() -> Self {
-        InterMachineSwap {}
-    }
-
     fn perform_search(
         instance: &ProblemInstance,
         solution: &ProblemSolution,
@@ -38,6 +14,12 @@ impl InterMachineSwap {
                 InterMachineSwap::get_best_swap_from_machine(instance, solution, machine)
             })
             .min_by_key(|solution| solution.get_total_completion_time())
+    }
+}
+
+impl InterMachineSwap {
+    pub fn new() -> Self {
+        InterMachineSwap {}
     }
 
     fn get_best_swap_from_machine(

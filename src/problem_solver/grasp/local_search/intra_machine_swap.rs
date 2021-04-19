@@ -3,29 +3,6 @@ use super::*;
 pub struct IntraMachineSwap {}
 
 impl LocalSearch for IntraMachineSwap {
-    fn improve(
-        &self,
-        instance: &ProblemInstance,
-        mut solution: ProblemSolution,
-    ) -> ProblemSolution {
-        loop {
-            let another_solution = match IntraMachineSwap::perform_search(instance, &solution) {
-                None => return solution,
-                Some(another_solution) => another_solution,
-            };
-            if another_solution.get_total_completion_time() >= solution.get_total_completion_time()
-            {
-                return solution;
-            }
-            solution = another_solution;
-        }
-    }
-}
-
-impl IntraMachineSwap {
-    pub fn new() -> Self {
-        IntraMachineSwap {}
-    }
     fn perform_search(
         instance: &ProblemInstance,
         solution: &ProblemSolution,
@@ -34,6 +11,12 @@ impl IntraMachineSwap {
             .filter(|&machine| solution.task_assignment_matrix[machine].len() > 1)
             .map(|machine| IntraMachineSwap::get_best_swap_by_machine(instance, solution, machine))
             .min_by_key(|solution| solution.get_total_completion_time())
+    }
+}
+
+impl IntraMachineSwap {
+    pub fn new() -> Self {
+        IntraMachineSwap {}
     }
 
     fn get_best_swap_by_machine(
