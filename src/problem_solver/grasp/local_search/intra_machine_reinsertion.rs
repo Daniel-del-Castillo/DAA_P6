@@ -5,6 +5,7 @@ pub struct IntraMachineReinsertion {}
 
 impl LocalSearch for IntraMachineReinsertion {
     fn perform_search(
+        &self,
         instance: &ProblemInstance,
         solution: &ProblemSolution,
     ) -> Option<ProblemSolution> {

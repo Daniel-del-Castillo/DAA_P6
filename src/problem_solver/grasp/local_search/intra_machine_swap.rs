@@ -5,6 +5,7 @@ pub struct IntraMachineSwap {}
 
 impl LocalSearch for IntraMachineSwap {
     fn perform_search(
+        &self,
         instance: &ProblemInstance,
         solution: &ProblemSolution,
     ) -> Option<ProblemSolution> {

@@ -6,11 +6,13 @@ pub mod grasp;
 mod greedy_solver;
 mod problem_solution;
 mod randomized_greedy_solver;
+pub mod vns;
 pub use fast_greedy_solver::FastGreedySolver;
 pub use grasp::GRASP;
 pub use greedy_solver::GreedySolver;
 pub use problem_solution::ProblemSolution;
 pub use randomized_greedy_solver::RandomizedGreedySolver;
+pub use vns::VNS;
 
 /// A trait for an algorithm that is able to solve an instance of the problem
 pub trait ProblemSolver {

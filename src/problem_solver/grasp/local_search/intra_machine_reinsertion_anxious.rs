@@ -5,6 +5,7 @@ pub struct IntraMachineReinsertionAnxious {}
 
 impl LocalSearch for IntraMachineReinsertionAnxious {
     fn perform_search(
+        &self,
         instance: &ProblemInstance,
         solution: &ProblemSolution,
     ) -> Option<ProblemSolution> {

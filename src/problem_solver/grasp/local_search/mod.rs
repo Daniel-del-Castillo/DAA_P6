@@ -34,7 +34,7 @@ pub trait LocalSearch {
         mut solution: ProblemSolution,
     ) -> ProblemSolution {
         loop {
-            let another_solution = match Self::perform_search(instance, &solution) {
+            let another_solution = match self.perform_search(instance, &solution) {
                 None => return solution,
                 Some(another_solution) => another_solution,
             };
@@ -50,6 +50,7 @@ pub trait LocalSearch {
     /// It can return a solution that **might** be a better one than the actual
     /// or it can return None
     fn perform_search(
+        &self,
         instance: &ProblemInstance,
         solution: &ProblemSolution,
     ) -> Option<ProblemSolution>;
