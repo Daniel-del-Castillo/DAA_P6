@@ -1,5 +1,6 @@
 use super::*;
 
+/// An anxious local search that consists on reinserting a task in the same machine
 pub struct IntraMachineReinsertionAnxious {}
 
 impl LocalSearch for IntraMachineReinsertionAnxious {

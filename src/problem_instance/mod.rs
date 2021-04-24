@@ -1,3 +1,5 @@
+//! This module defines the class [ProblemInstance](ProblemInstance) which represents
+//! an instance of this problem.
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
@@ -10,6 +12,9 @@ pub use problem_instance_error::{
 
 const SEPARATOR: &'static str = "\t";
 
+/// An instance of the problem. It is composed of a matrix of setup times, a vector with the times of
+/// each task and the number of machines that will be used. Being N the number of tasks, the vector
+/// must have a length of N and the matrix must be N+1xN+1
 pub struct ProblemInstance {
     setup_times: Vec<Vec<usize>>,
     task_times: Vec<usize>,
@@ -17,6 +22,22 @@ pub struct ProblemInstance {
 }
 
 impl ProblemInstance {
+    /// This function allows to read a Problem instance from a file. The file must have an
+    /// specific notation:<br/>
+    /// The file with the problem instance. It should have the following format
+    /// (You should substitute the {} with the correct values and use a tab as
+    /// separator):<br/><br/>
+    /// n:  {number of tasks}<br/>
+    /// m:  {number of machines}<br/>
+    /// {whatever but without have tabs}  {list of task times separated by tabs}<br/>
+    /// {a line, you can put here whatever you want}<br/>
+    /// {list of setup times to go from inactive to each task}<br/>
+    /// {list of setup times to go from task 1 to each task}<br/>
+    /// {list of setup times to go from task 2 to each task}<br/>
+    /// Continues...<br/>
+    /// * The first column and row of the matrix represent the inactive state
+    /// * The matrix must be MxM, being M equal to th number of tasks + 1
+    /// * The task times list must have an element for each task";
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self, ProblemInstanceError> {
         let mut file_reader = BufReader::new(File::open(path)?);
         let mut line = String::new();
@@ -63,6 +84,9 @@ impl ProblemInstance {
             .collect()
     }
 
+    /// Allows to calculate the total completion time (TCT) of certain order of tasks
+    /// according to the times in the problem instance. The elements in the vector
+    /// must be valid indexes in the task times list.
     pub fn calculate_total_completion_time(&self, task_list: &Vec<usize>) -> usize {
         task_list
             .iter()
@@ -78,14 +102,17 @@ impl ProblemInstance {
             )
     }
 
+    /// Allows to get the number of machines
     pub fn number_of_machines(&self) -> usize {
         self.number_of_machines
     }
 
+    /// Allows to get the vector of task times
     pub fn task_times(&self) -> &Vec<usize> {
         &self.task_times
     }
 
+    /// Allows to get the setup times matrix
     pub fn setup_times(&self) -> &Vec<Vec<usize>> {
         &self.setup_times
     }

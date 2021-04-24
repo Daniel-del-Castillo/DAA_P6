@@ -1,5 +1,6 @@
 use super::*;
 
+/// An anxious local search that consists on doing swaps between tasks in the same machine
 pub struct IntraMachineSwapAnxious {}
 
 impl LocalSearch for IntraMachineSwapAnxious {

@@ -1,6 +1,7 @@
 use super::*;
 use std::mem;
 
+/// A local search that consists on doing swaps between tasks in the different machines
 pub struct InterMachineSwap {}
 
 impl LocalSearch for InterMachineSwap {

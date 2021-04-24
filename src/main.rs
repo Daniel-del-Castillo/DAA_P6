@@ -5,21 +5,20 @@ use std::time::Instant;
 
 use clap::{App, Arg};
 
-mod problem_instance;
-use problem_instance::ProblemInstance;
-mod problem_solver;
-use problem_solver::grasp::stop_criterion::{
-    IterationsWithoutChange, StopCriterion, TotalIterations,
-};
-use problem_solver::{
-    grasp::local_search::{
-        InterMachineReinsertion, InterMachineReinsertionAnxious, InterMachineSwap,
-        InterMachineSwapAnxious, IntraMachineReinsertion, IntraMachineReinsertionAnxious,
-        IntraMachineSwap, IntraMachineSwapAnxious, NoSearch,
+use daap7::{
+    problem_solver::{
+        grasp::{
+            local_search::{
+                InterMachineReinsertion, InterMachineReinsertionAnxious, InterMachineSwap,
+                InterMachineSwapAnxious, IntraMachineReinsertion, IntraMachineReinsertionAnxious,
+                IntraMachineSwap, IntraMachineSwapAnxious, NoSearch,
+            },
+            stop_criterion::{IterationsWithoutChange, StopCriterion, TotalIterations},
+        },
+        FastGreedySolver, GreedySolver, ProblemSolver, RandomizedGreedySolver, GRASP,
     },
-    FastGreedySolver, GreedySolver, RandomizedGreedySolver,
+    ProblemInstance,
 };
-use problem_solver::{ProblemSolver, GRASP};
 
 const FILE_EXPLANATION: &'static str =
     "The file with the problem instance. It should have the following format:
@@ -74,7 +73,7 @@ fn main() -> std::io::Result<()> {
     let mut output_file = File::create(&matches.value_of("output_file").unwrap())?;
     let k = matches.value_of("k").unwrap().parse().unwrap();
     print_headers(&mut output_file)?;
-    for &iterations in [50, 100, 200, 500, 1000, 2000, 5000, 10000].iter() {
+    for &iterations in [10, 20, 50, 100, 200, 500].iter() {
         if matches.is_present("without_change") {
             print_results(
                 &instance,
@@ -189,7 +188,7 @@ fn print_results<S: StopCriterion>(
 fn print_result<P: ProblemSolver>(
     instance: &ProblemInstance,
     output_file: &mut File,
-    solver: P,
+    solver: &mut P,
 ) -> Result<()> {
     let instant = Instant::now();
     let tct = solver.solve(&instance).get_total_completion_time();

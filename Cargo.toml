@@ -1,5 +1,5 @@
 [package]
-name = "parallel-machine-scheduling-problem-with-dependent-setup-times"
+name = "daap7"
 version = "0.1.0"
 authors = ["Daniel del Castillo <alu0101225548@ull.edu.es>"]
 edition = "2018"

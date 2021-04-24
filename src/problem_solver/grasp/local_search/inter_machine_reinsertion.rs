@@ -1,5 +1,6 @@
 use super::*;
 
+/// A local search that consists on reinserting a task in a different machine
 pub struct InterMachineReinsertion {}
 
 impl LocalSearch for InterMachineReinsertion {

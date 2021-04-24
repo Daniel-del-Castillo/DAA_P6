@@ -1,6 +1,7 @@
 use super::*;
 use std::mem;
 
+/// An anxious local search that consists on doing swaps between tasks in the different machines
 pub struct InterMachineSwapAnxious {}
 
 impl LocalSearch for InterMachineSwapAnxious {

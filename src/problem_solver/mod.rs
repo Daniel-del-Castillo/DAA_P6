@@ -12,8 +12,10 @@ pub use greedy_solver::GreedySolver;
 pub use problem_solution::ProblemSolution;
 pub use randomized_greedy_solver::RandomizedGreedySolver;
 
+/// A trait for an algorithm that is able to solve an instance of the problem
 pub trait ProblemSolver {
-    fn solve(self, instance: &ProblemInstance) -> ProblemSolution;
+    /// Solves an instance of the problem
+    fn solve(&mut self, instance: &ProblemInstance) -> ProblemSolution;
 }
 
 #[derive(Eq)]

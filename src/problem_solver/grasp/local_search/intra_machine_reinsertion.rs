@@ -1,5 +1,6 @@
 use super::*;
 
+/// A local search that consists on reinserting a task in the same machine
 pub struct IntraMachineReinsertion {}
 
 impl LocalSearch for IntraMachineReinsertion {
@@ -9,24 +10,21 @@ impl LocalSearch for IntraMachineReinsertion {
     ) -> Option<ProblemSolution> {
         (0..solution.task_assignment_matrix.len())
             .filter(|&machine| solution.task_assignment_matrix[machine].len() > 1)
-            .map(|machine| {
-                (0..solution.task_assignment_matrix[machine].len())
-                    .map(move |task_index| {
-                        (0..=solution.task_assignment_matrix[machine].len())
-                            .filter(move |&possible_index| possible_index != task_index)
-                            .map(move |possible_task_index| {
-                                IntraMachineReinsertion::get_solution(
-                                    instance,
-                                    solution,
-                                    machine,
-                                    task_index,
-                                    possible_task_index,
-                                )
-                            })
-                    })
-                    .flatten()
+            .flat_map(|machine| {
+                (0..solution.task_assignment_matrix[machine].len()).flat_map(move |task_index| {
+                    (0..=solution.task_assignment_matrix[machine].len())
+                        .filter(move |&possible_index| possible_index != task_index)
+                        .map(move |possible_task_index| {
+                            IntraMachineReinsertion::get_solution(
+                                instance,
+                                solution,
+                                machine,
+                                task_index,
+                                possible_task_index,
+                            )
+                        })
+                })
             })
-            .flatten()
             .min_by_key(|solution| solution.get_total_completion_time())
     }
 }
