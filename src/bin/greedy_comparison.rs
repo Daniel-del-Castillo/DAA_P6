@@ -42,7 +42,7 @@ fn main() -> std::io::Result<()> {
     };
     let mut output_file = File::create(&matches.value_of("output_file").unwrap())?;
     print_headers(&mut output_file)?;
-    for iterations in vec![100, 500, 1000, 5000, 10000] {
+    for iterations in vec![100, 500, 1_000, 5_000, 10_000] {
         let solver_list: Vec<(String, Box<dyn ProblemSolver>)> = get_solver_list(iterations);
         print_results(&instance, &mut output_file, solver_list)?;
     }
@@ -50,7 +50,7 @@ fn main() -> std::io::Result<()> {
 }
 
 fn get_args() -> ArgMatches<'static> {
-    App::new("parallel-machine-scheduling-problem-with-dependent-setup-times")
+    App::new("daap7")
         .arg(
             Arg::with_name("problem_file")
                 .required(true)
@@ -79,7 +79,7 @@ fn get_solver_list(iterations: usize) -> Vec<(String, Box<dyn ProblemSolver>)> {
     ];
     for k in vec![2, 3, 4] {
         list.push((
-            format!("{},Fast Greedy solver k={},", iterations, k),
+            format!("{},Randomized Greedy solver k={},", iterations, k),
             Box::new(RandomizedGreedySolver::new(k)),
         ));
         list.push((
@@ -95,7 +95,7 @@ fn get_solver_list(iterations: usize) -> Vec<(String, Box<dyn ProblemSolver>)> {
             Box::new(GRASP::new(
                 k,
                 NoSearch::new(),
-                IterationsWithoutChange::new(iterations / 10),
+                IterationsWithoutChange::new(iterations / 5),
             )),
         ));
     }
@@ -126,7 +126,7 @@ fn print_result(
 }
 
 fn print_headers(file: &mut File) -> Result<()> {
-    write!(file, "iterations")?;
+    write!(file, "iterations,")?;
     write!(file, "algorithm,")?;
     write!(file, "tct,")?;
     write!(file, "time\n")

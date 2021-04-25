@@ -1,11 +1,22 @@
 # %%
-from plotnine import ggplot, aes, geom_point, geom_line
+from plotnine import ggplot, aes, geom_point, geom_line, xlab, ylab
 import pandas
 import sys
 
 
-data = pandas.read_csv('tcts/100it_total_it')
-ggplot(data, aes(x='k', y='time', color='algorithm')) + \
-    geom_point() + geom_line()
+# %%
+data = pandas.read_csv('results/greedy_2')
+ggplot(data, aes(x='iterations', y='time', color='algorithm')) + \
+    geom_point() + geom_line() + \
+    xlab('Iterations') + \
+    ylab('Time (in ms)')
+
+# %%
+
+data = pandas.read_csv('results/greedy_2')
+ggplot(data, aes(x='iterations', y='tct', color='algorithm')) + \
+    geom_point() + geom_line() + \
+    xlab('Iterations') + \
+    ylab('TCT')
 
 # %%
