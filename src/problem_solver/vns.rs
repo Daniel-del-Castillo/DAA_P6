@@ -7,6 +7,15 @@ use super::{
     ProblemInstance, ProblemSolution, ProblemSolver,
 };
 
+/// A VNS implementation. The different environments used and the stop criterion
+/// can be specified in the constructor. It creates new solutions until the stop
+/// criterion is fullfilled. For each solution it creates a solution using
+/// (GRASP)[super::GRASP] and then modifies the solution with a number of random inter
+/// machine reinsertions, performs local searches until it reaches a local minimum
+/// for every environment and if that solution is better than the actual one, it updates
+/// the solution. THe number of random reinsertions increases each time the solution found
+/// was worse or equal than the actual one, until a max value that can be specified in the
+/// costructor
 pub struct VNS<S: StopCriterion> {
     max_k: usize,
     stop_criterion: S,
@@ -36,7 +45,12 @@ impl<S: StopCriterion> ProblemSolver for VNS<S> {
 }
 
 impl<S: StopCriterion> VNS<S> {
+    /// Creates a new instance with the specified max number of random reinsertions,
+    /// stop criterion and local searches. The max number of random reinsertions must be
+    /// than 0. The order of the searches in the vector will be preserved and can affect
+    /// the performance of the algorithm
     pub fn new(max_k: usize, stop_criterion: S, searches: Vec<Box<dyn LocalSearch>>) -> Self {
+        assert!(max_k > 0);
         VNS {
             max_k,
             stop_criterion,
@@ -47,7 +61,7 @@ impl<S: StopCriterion> VNS<S> {
     fn search(&self, instance: &ProblemInstance) -> ProblemSolution {
         let mut grasp = GRASP::new(1, InterMachineReinsertion::new(), TotalIterations::new(1));
         let mut solution = grasp.solve(instance);
-        let mut k = 0;
+        let mut k = 1;
         while k <= self.max_k {
             let mut new_solution = VNS::<S>::shake(instance, solution.clone(), k);
             new_solution = self.vnd(instance, new_solution);
@@ -55,7 +69,7 @@ impl<S: StopCriterion> VNS<S> {
                 k += 1;
             } else {
                 solution = new_solution;
-                k = 0;
+                k = 1;
             }
         }
         solution

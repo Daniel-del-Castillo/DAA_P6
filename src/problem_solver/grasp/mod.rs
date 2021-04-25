@@ -5,7 +5,7 @@ pub mod stop_criterion;
 use local_search::LocalSearch;
 use stop_criterion::StopCriterion;
 
-/// A implementation of a GRASP algorithm to solve the problem. The stop
+/// A implementation of a GRASP algorithm. The stop
 /// criterion and the local search to be used can be chosen and passed to the
 /// constructor. For the constructive phase it will use the
 /// [Randomized greedy solver algorithm](super::RandomizedGreedySolver), the k can
