@@ -7,9 +7,9 @@ impl LocalSearch for NoSearch {
     fn perform_search(
         &self,
         _instance: &ProblemInstance,
-        _solution: &ProblemSolution,
-    ) -> Option<ProblemSolution> {
-        None
+        solution: ProblemSolution,
+    ) -> ProblemSolution {
+        solution
     }
 }
 

@@ -16,13 +16,13 @@ use super::{
 /// the solution. THe number of random reinsertions increases each time the solution found
 /// was worse or equal than the actual one, until a max value that can be specified in the
 /// costructor
-pub struct VNS<S: StopCriterion> {
+pub struct GVNS<S: StopCriterion> {
     max_k: usize,
     stop_criterion: S,
     searches: Vec<Box<dyn LocalSearch>>,
 }
 
-impl<S: StopCriterion> ProblemSolver for VNS<S> {
+impl<S: StopCriterion> ProblemSolver for GVNS<S> {
     fn solve(&mut self, instance: &ProblemInstance) -> ProblemSolution {
         let mut solution = self.search(instance);
         let mut solution_tct = solution.get_total_completion_time();
@@ -44,14 +44,14 @@ impl<S: StopCriterion> ProblemSolver for VNS<S> {
     }
 }
 
-impl<S: StopCriterion> VNS<S> {
+impl<S: StopCriterion> GVNS<S> {
     /// Creates a new instance with the specified max number of random reinsertions,
     /// stop criterion and local searches. The max number of random reinsertions must be
     /// than 0. The order of the searches in the vector will be preserved and can affect
     /// the performance of the algorithm
     pub fn new(max_k: usize, stop_criterion: S, searches: Vec<Box<dyn LocalSearch>>) -> Self {
         assert!(max_k > 0);
-        VNS {
+        GVNS {
             max_k,
             stop_criterion,
             searches,
@@ -59,11 +59,11 @@ impl<S: StopCriterion> VNS<S> {
     }
 
     fn search(&self, instance: &ProblemInstance) -> ProblemSolution {
-        let mut grasp = GRASP::new(1, InterMachineReinsertion::new(), TotalIterations::new(1));
+        let mut grasp = GRASP::new(2, InterMachineReinsertion::new(), TotalIterations::new(1));
         let mut solution = grasp.solve(instance);
         let mut k = 1;
         while k <= self.max_k {
-            let mut new_solution = VNS::<S>::shake(instance, solution.clone(), k);
+            let mut new_solution = GVNS::<S>::shake(instance, solution.clone(), k);
             new_solution = self.vnd(instance, new_solution);
             if solution.get_total_completion_time() < new_solution.get_total_completion_time() {
                 k += 1;
@@ -80,10 +80,24 @@ impl<S: StopCriterion> VNS<S> {
         mut solution: ProblemSolution,
         number_of_shakes: usize,
     ) -> ProblemSolution {
+        let mut removed_tasks = Vec::new();
         for _ in 0..number_of_shakes {
-            let from_machine = rand::random::<usize>() % solution.task_assignment_matrix.len();
-            let from_pos =
-                rand::random::<usize>() % solution.task_assignment_matrix[from_machine].len();
+            let possible_tasks: Vec<(usize, usize)> = (0..solution.task_assignment_matrix.len())
+                .filter(|&machine| solution.task_assignment_matrix[machine].len() > 0)
+                .flat_map(|from_machine| {
+                    (0..solution.task_assignment_matrix[from_machine].len())
+                        .map(move |from_pos| (from_machine, from_pos))
+                })
+                .collect();
+            if possible_tasks.is_empty() {
+                break;
+            }
+            let (from_machine, from_pos): (usize, usize) =
+                removed_tasks.remove(rand::random::<usize>() % removed_tasks.len());
+            let task = solution.task_assignment_matrix[from_machine].remove(from_pos);
+            removed_tasks.push((from_machine, task));
+        }
+        for (from_machine, task) in removed_tasks {
             let to_machine = loop {
                 let number = rand::random::<usize>() % solution.task_assignment_matrix.len();
                 if number != from_machine {
@@ -92,7 +106,6 @@ impl<S: StopCriterion> VNS<S> {
             };
             let to_pos =
                 rand::random::<usize>() % (solution.task_assignment_matrix[to_machine].len() + 1);
-            let task = solution.task_assignment_matrix[from_machine].remove(from_pos);
             solution.task_assignment_matrix[to_machine].insert(to_pos, task);
             solution.tcts_by_machine[from_machine] = instance
                 .calculate_total_completion_time(&solution.task_assignment_matrix[from_machine]);
@@ -105,7 +118,8 @@ impl<S: StopCriterion> VNS<S> {
     fn vnd(&self, instance: &ProblemInstance, mut solution: ProblemSolution) -> ProblemSolution {
         let mut search_index = 0;
         while search_index < self.searches.len() {
-            let new_solution = self.searches[search_index].improve(instance, solution.clone());
+            let new_solution =
+                self.searches[search_index].perform_search(instance, solution.clone());
             if solution.get_total_completion_time() < new_solution.get_total_completion_time() {
                 search_index += 1;
             } else {

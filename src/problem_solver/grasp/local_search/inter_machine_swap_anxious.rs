@@ -8,8 +8,8 @@ impl LocalSearch for InterMachineSwapAnxious {
     fn perform_search(
         &self,
         instance: &ProblemInstance,
-        solution: &ProblemSolution,
-    ) -> Option<ProblemSolution> {
+        solution: ProblemSolution,
+    ) -> ProblemSolution {
         let solution_tct = solution.get_total_completion_time();
         for from_machine in 0..solution.task_assignment_matrix.len() {
             if solution.task_assignment_matrix[from_machine].len() == 0 {
@@ -24,20 +24,20 @@ impl LocalSearch for InterMachineSwapAnxious {
                     {
                         let new_solution = InterMachineSwapAnxious::get_solution(
                             instance,
-                            solution,
+                            &solution,
                             from_machine,
                             task_index,
                             to_machine,
                             possible_task_index,
                         );
                         if new_solution.get_total_completion_time() < solution_tct {
-                            return Some(new_solution);
+                            return new_solution;
                         }
                     }
                 }
             }
         }
-        None
+        solution
     }
 }
 

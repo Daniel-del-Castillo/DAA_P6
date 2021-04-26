@@ -34,10 +34,7 @@ pub trait LocalSearch {
         mut solution: ProblemSolution,
     ) -> ProblemSolution {
         loop {
-            let another_solution = match self.perform_search(instance, &solution) {
-                None => return solution,
-                Some(another_solution) => another_solution,
-            };
+            let another_solution = self.perform_search(instance, solution.clone());
             if another_solution.get_total_completion_time() >= solution.get_total_completion_time()
             {
                 return solution;
@@ -48,10 +45,9 @@ pub trait LocalSearch {
 
     /// Performs a local search **only** in the environment of the actual solution.
     /// It can return a solution that **might** be a better one than the actual
-    /// or it can return None
     fn perform_search(
         &self,
         instance: &ProblemInstance,
-        solution: &ProblemSolution,
-    ) -> Option<ProblemSolution>;
+        solution: ProblemSolution,
+    ) -> ProblemSolution;
 }

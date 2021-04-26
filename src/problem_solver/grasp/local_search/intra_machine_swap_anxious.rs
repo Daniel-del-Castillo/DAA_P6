@@ -7,8 +7,8 @@ impl LocalSearch for IntraMachineSwapAnxious {
     fn perform_search(
         &self,
         instance: &ProblemInstance,
-        solution: &ProblemSolution,
-    ) -> Option<ProblemSolution> {
+        solution: ProblemSolution,
+    ) -> ProblemSolution {
         let solution_tct = solution.get_total_completion_time();
         for machine in 0..solution.task_assignment_matrix.len() {
             if solution.task_assignment_matrix[machine].len() < 2 {
@@ -21,18 +21,18 @@ impl LocalSearch for IntraMachineSwapAnxious {
                     }
                     let new_solution = IntraMachineSwapAnxious::get_solution(
                         instance,
-                        solution,
+                        &solution,
                         machine,
                         task_index,
                         possible_task_index,
                     );
                     if new_solution.get_total_completion_time() < solution_tct {
-                        return Some(new_solution);
+                        return new_solution;
                     }
                 }
             }
         }
-        None
+        solution
     }
 }
 

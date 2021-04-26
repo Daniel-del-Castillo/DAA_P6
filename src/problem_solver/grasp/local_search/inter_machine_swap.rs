@@ -8,21 +8,22 @@ impl LocalSearch for InterMachineSwap {
     fn perform_search(
         &self,
         instance: &ProblemInstance,
-        solution: &ProblemSolution,
-    ) -> Option<ProblemSolution> {
+        solution: ProblemSolution,
+    ) -> ProblemSolution {
+        let solution_ref = &solution;
         (0..solution.task_assignment_matrix.len())
             .filter(|&machine| solution.task_assignment_matrix[machine].len() > 1)
-            .map(|from_machine| {
-                (0..solution.task_assignment_matrix[from_machine].len())
-                    .map(move |task_index| {
-                        (0..solution.task_assignment_matrix.len())
+            .flat_map(|from_machine| {
+                (0..solution.task_assignment_matrix[from_machine].len()).flat_map(
+                    move |task_index| {
+                        (0..solution_ref.task_assignment_matrix.len())
                             .filter(move |&to_machine| to_machine != from_machine)
-                            .map(move |to_machine| {
-                                (0..solution.task_assignment_matrix[to_machine].len()).map(
+                            .flat_map(move |to_machine| {
+                                (0..solution_ref.task_assignment_matrix[to_machine].len()).map(
                                     move |possible_swap_index| {
                                         InterMachineSwap::get_solution(
                                             instance,
-                                            solution,
+                                            solution_ref,
                                             from_machine,
                                             task_index,
                                             to_machine,
@@ -31,12 +32,11 @@ impl LocalSearch for InterMachineSwap {
                                     },
                                 )
                             })
-                            .flatten()
-                    })
-                    .flatten()
+                    },
+                )
             })
-            .flatten()
             .min_by_key(|solution| solution.get_total_completion_time())
+            .unwrap_or(solution)
     }
 }
 

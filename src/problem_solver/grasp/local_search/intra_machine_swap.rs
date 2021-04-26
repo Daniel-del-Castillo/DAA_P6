@@ -7,18 +7,19 @@ impl LocalSearch for IntraMachineSwap {
     fn perform_search(
         &self,
         instance: &ProblemInstance,
-        solution: &ProblemSolution,
-    ) -> Option<ProblemSolution> {
+        solution: ProblemSolution,
+    ) -> ProblemSolution {
+        let solution_ref = &solution;
         (0..solution.task_assignment_matrix.len())
             .filter(|&machine| solution.task_assignment_matrix[machine].len() > 1)
             .flat_map(|machine| {
                 (0..solution.task_assignment_matrix[machine].len()).flat_map(move |task_index| {
-                    (0..solution.task_assignment_matrix[machine].len())
+                    (0..solution_ref.task_assignment_matrix[machine].len())
                         .filter(move |&possible_task| possible_task != task_index)
                         .map(move |possible_task_index| {
                             IntraMachineSwap::get_solution(
                                 instance,
-                                solution,
+                                solution_ref,
                                 machine,
                                 task_index,
                                 possible_task_index,
@@ -27,6 +28,7 @@ impl LocalSearch for IntraMachineSwap {
                 })
             })
             .min_by_key(|solution| solution.get_total_completion_time())
+            .unwrap_or(solution)
     }
 }
 
