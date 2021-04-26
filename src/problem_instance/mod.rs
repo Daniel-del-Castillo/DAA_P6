@@ -88,6 +88,9 @@ impl ProblemInstance {
     /// according to the times in the problem instance. The elements in the vector
     /// must be valid indexes in the task times list.
     pub fn calculate_total_completion_time(&self, task_list: &Vec<usize>) -> usize {
+        if task_list.is_empty() {
+            return 0;
+        }
         task_list
             .iter()
             .zip(task_list.iter().skip(1))

@@ -10,7 +10,7 @@ use super::{
 /// A VNS implementation. The different environments used and the stop criterion
 /// can be specified in the constructor. It creates new solutions until the stop
 /// criterion is fullfilled. For each solution it creates a solution using
-/// (GRASP)[super::GRASP] and then modifies the solution with a number of random inter
+/// [GRASP](super::GRASP) and then modifies the solution with a number of random inter
 /// machine reinsertions, performs local searches until it reaches a local minimum
 /// for every environment and if that solution is better than the actual one, it updates
 /// the solution. THe number of random reinsertions increases each time the solution found
@@ -65,7 +65,7 @@ impl<S: StopCriterion> GVNS<S> {
         while k <= self.max_k {
             let mut new_solution = GVNS::<S>::shake(instance, solution.clone(), k);
             new_solution = self.vnd(instance, new_solution);
-            if solution.get_total_completion_time() < new_solution.get_total_completion_time() {
+            if solution.get_total_completion_time() <= new_solution.get_total_completion_time() {
                 k += 1;
             } else {
                 solution = new_solution;
@@ -82,18 +82,19 @@ impl<S: StopCriterion> GVNS<S> {
     ) -> ProblemSolution {
         let mut removed_tasks = Vec::new();
         for _ in 0..number_of_shakes {
-            let possible_tasks: Vec<(usize, usize)> = (0..solution.task_assignment_matrix.len())
-                .filter(|&machine| solution.task_assignment_matrix[machine].len() > 0)
-                .flat_map(|from_machine| {
-                    (0..solution.task_assignment_matrix[from_machine].len())
-                        .map(move |from_pos| (from_machine, from_pos))
-                })
-                .collect();
+            let mut possible_tasks: Vec<(usize, usize)> =
+                (0..solution.task_assignment_matrix.len())
+                    .filter(|&machine| solution.task_assignment_matrix[machine].len() > 0)
+                    .flat_map(|from_machine| {
+                        (0..solution.task_assignment_matrix[from_machine].len())
+                            .map(move |from_pos| (from_machine, from_pos))
+                    })
+                    .collect();
             if possible_tasks.is_empty() {
                 break;
             }
             let (from_machine, from_pos): (usize, usize) =
-                removed_tasks.remove(rand::random::<usize>() % removed_tasks.len());
+                possible_tasks.remove(rand::random::<usize>() % possible_tasks.len());
             let task = solution.task_assignment_matrix[from_machine].remove(from_pos);
             removed_tasks.push((from_machine, task));
         }
@@ -120,7 +121,7 @@ impl<S: StopCriterion> GVNS<S> {
         while search_index < self.searches.len() {
             let new_solution =
                 self.searches[search_index].perform_search(instance, solution.clone());
-            if solution.get_total_completion_time() < new_solution.get_total_completion_time() {
+            if solution.get_total_completion_time() <= new_solution.get_total_completion_time() {
                 search_index += 1;
             } else {
                 solution = new_solution;
