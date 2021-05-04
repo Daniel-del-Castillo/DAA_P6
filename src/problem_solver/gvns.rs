@@ -116,17 +116,26 @@ impl<S: StopCriterion> GVNS<S> {
         solution
     }
 
+    //  VND ANTIGUO
+    // fn vnd(&self, instance: &ProblemInstance, mut solution: ProblemSolution) -> ProblemSolution {
+    //     let mut search_index = 0;
+    //     while search_index < self.searches.len() {
+    //         let new_solution =
+    //             self.searches[search_index].perform_search(instance, solution.clone());
+    //         if solution.get_total_completion_time() <= new_solution.get_total_completion_time() {
+    //             search_index += 1;
+    //         } else {
+    //             solution = new_solution;
+    //             search_index = 0;
+    //         }
+    //     }
+    //     solution
+    // }
+
+    // MODIFICACIÓN
     fn vnd(&self, instance: &ProblemInstance, mut solution: ProblemSolution) -> ProblemSolution {
-        let mut search_index = 0;
-        while search_index < self.searches.len() {
-            let new_solution =
-                self.searches[search_index].perform_search(instance, solution.clone());
-            if solution.get_total_completion_time() <= new_solution.get_total_completion_time() {
-                search_index += 1;
-            } else {
-                solution = new_solution;
-                search_index = 0;
-            }
+        for search in self.searches.iter() {
+            solution = search.improve(instance, solution);
         }
         solution
     }
